@@ -1,0 +1,71 @@
+#include <iostream>
+#include <cstdlib>
+#include <queue>
+#include <cstring>
+#define maxN 100000000
+using namespace std;
+double epsilon = 0.01;  
+int t = 1/epsilon/epsilon;//抽样抽到的节点个数 
+int n;//节点个数 
+int num;//一个连通分量已经访问的节点数量 
+int k = 2/epsilon;//一个连通分量最多访问节点数
+double c;//estimated number of components in the whole graph
+double c_estimate;//estimated number of components in the sample
+//邻接链表
+struct node
+{
+	int num;
+	node* next;
+};
+node* head[maxN];
+bool addEdge(int a, int b)
+{
+	node* e = new node;
+	e->num = b;
+	e->next = head[a];
+	head[a] = e;	
+}
+bool visited[maxN];
+void components()
+{
+	for(int i = 1; i<=t; i++)
+	{
+		int uNum = (rand()<<15 + rand())%n;//生成小于节点个数的随机数
+		node* u = new node; u->num = uNum;
+		num = 0;//新的联通分量
+		memset(visited, 0, sizeof(visited));
+		//bfs
+		queue<node*> q;
+		q.push(u);
+		while(!q.empty())
+		{
+			if(num == k) break;
+			node* u = q.front();
+			q.pop();
+			visited[u->num] = 1;
+			num++; 
+			node* v = head[u->num];
+			while(v)
+			{
+				if(!visited[v->num])q.push(v);
+				v = v->next;
+			}
+		}
+		c_estimate += 1.0/num;//加入节点u的权重 
+	}
+}
+int main()
+{
+	cin >> n;
+	int edgeNum, a, b;
+	cin >> edgeNum;
+	while(edgeNum--)
+	{
+		cin >> a >> b;
+		addEdge(a, b);
+	}
+	components();
+	c = c_estimate/t*n;
+	cout << c << endl;
+	return 0;
+} 
